@@ -10,47 +10,62 @@ try:
 except:
     sys.exit("Error: can't find required numpy module")
 
+class burnScarAnalysis:
+    def __init__(self, *args):
+        self.outDriver = gdal.GetDriverByName("GTiff")
+        self.preRedBand = gdal.Open(sys.argv[1])
+        self.preRedBandArray = self.preRedBand.ReadAsArray()
+        self.preNIRBand = gdal.Open(sys.argv[2])
+        self.preNIRBandArray = self.preNIRBand.ReadAsArray()
+        self.outputFile = sys.argv[3]
+        self.maskValue = -9999
+    
+    def _closeDatasets(self):
+        print("Closing Datasets ...")
+        self.preRedBand = None
+        self.preNIRBand = None
 
-# Define imagery files
-july_band5 = "../data/LC08_L1TP_20170705_01_T1_sr_band5_merged.tif"
-july_band7 = "../data/LC08_L1TP_20170705_01_T1_sr_band7_merged.tif"
-# aug_band5 = "../data/LC08_L1TP_20170822_01_T1_sr_band5_merged.tif"
-# aug_band7 = "../data/LC08_L1TP_20170822_01_T1_sr_band7_merged.tif"
+    def _outputRaster(self, nbrArray):
+        print("Outputing Normalized Burn Ratio raster ...")
+        outputRaster = self.outDriver.Create(str(self.outputFile), self.rows, self.cols, 1, gdal.GDT_Float32)
+        
+        # write NBRarray to output file
+        outputRaster.GetRasterBand(1).WriteArray(nbrArray)
+        outputRaster.SetGeoTransform(self.geoTransform)
+        outputRaster.SetProjection(self.projection)
 
-# Perform Normalized Burn Ratio on imagery (for both time periods). 
+        # Close output raster
+        outputRaster = None
 
-rasterJulyBand5 = gdal.Open(july_band5)
-rasterJulyBand5Array = rasterJulyBand5.ReadAsArray()
+    def _getImgSpecs(self):
+        print("Getting Image Specifications ...")
+        self.geoTransform = self.preRedBand.GetGeoTransform()
+        self.projection = self.preRedBand.GetProjection()
+        [self.cols,self.rows] = self.preRedBandArray.shape
 
-rasterJulyBand7 = gdal.Open(july_band7)
-rasterJulyBand7Array = rasterJulyBand7.ReadAsArray()
+    # Create a mask indicating invalid pixels
+    # - Mask out invalid Landsat 8 surface reflectance values (< 0 | > 10000)
+    # - Mask out when denominator equals 0
+    def _createMask(self):
+        print("Creating Mask ...")
+        self.mask = numpy.where((self.preRedBandArray < 0) 
+        | (self.preNIRBandArray < 0) 
+        | (self.preRedBandArray > 10000) 
+        | (self.preNIRBandArray > 10000) 
+        | (self.preRedBandArray + self.preNIRBandArray == 0), 0, 1)
 
-# Pre-fire NBR
-julyNBR = (rasterJulyBand5Array - rasterJulyBand7Array)/(rasterJulyBand5Array + rasterJulyBand7Array)
+    # Normalized Burn Ratio 
+    # NBR = (Red - NIR)/(Red + NIR)
+    def _createNBR(self):
+        print("Creating Normalized Burn Ratio ...")
+        NBRArray = numpy.choose(self.mask,(self.maskValue, 
+        (self.preRedBandArray - self.preNIRBandArray)/
+        (self.preRedBandArray + self.preNIRBandArray)))
+        self._outputRaster(NBRArray)
 
-#collect information about file
-[cols,rows] = rasterJulyBand5Array.shape
-trans = rasterJulyBand5.GetGeoTransform()
-proj = rasterJulyBand5.GetProjection()
 
-outputFileName = "../data/nbr_july2017.tif"
-
-#create an output file
-outdriver = gdal.GetDriverByName("GTiff")
-outdata = outdriver.Create(str(outputFileName), rows, cols, 1, gdal.GDT_Float32)
-
-#write the array to the file
-outdata.GetRasterBand(1).WriteArray(julyNBR)
-
-#georeference the image
-outdata.SetGeoTransform(trans)
-
-#Set projection information
-outdata.SetProjection(proj)
-
-# Close datasets
-rasterJulyBand5 = None
-rasterJulyBand7 = None
-outdata = None
-# Perform Change detection by calculating difference between both normalized burn ratios from the previous step. 
-# difference = early nbr - late nbr
+burnScar = burnScarAnalysis(sys.argv[1], sys.argv[2], sys.argv[3])
+burnScar._getImgSpecs()
+burnScar._createMask()
+burnScar._createNBR()
+burnScar._closeDatasets()
