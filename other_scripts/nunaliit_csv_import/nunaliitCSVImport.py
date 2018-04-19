@@ -2,9 +2,9 @@ import couchdb
 import csv
 
 # Required Config information for connecting to the couchDb
-couchDbURL = "URL location, e.g. 127.0.0.1"
-couchDbPort = "port number, e.g. 5984"
-couchDbUserName = "Your user name, e.g. admin"
+couchDbURL = "127.0.0.1"
+couchDbPort = "5984"
+couchDbUserName = "admin"
 couchDbUserPass = "Your password"
 couchDbName = "Name of your couchDb database"
 # Location of file being imported
