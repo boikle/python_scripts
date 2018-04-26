@@ -37,15 +37,27 @@ class burnScarAnalysis:
         inputRaster = None
 
 class nbr(burnScarAnalysis):
-    def __init__(self, *args):
+    def __init__(self, red, nir, output):
         burnScarAnalysis.__init__(self)
-        self.redBand = gdal.Open(sys.argv[1])
+        self.redBand = gdal.Open(red)
         self.redBandArray = self.redBand.ReadAsArray()
-        self.nirBand = gdal.Open(sys.argv[2])
+        self.nirBand = gdal.Open(nir)
         self.nirBandArray = self.nirBand.ReadAsArray()
-        self.outputRaster = sys.argv[3]
+        self.outputRaster = output
+
+        # Retrieve Image specifications
+        burnScarAnalysis._getImgSpecs(self, red)
+
+        # Create mask for imagery
         self.maskValue = -9999
-    
+        self._createMask()
+
+        # Create NBR
+        self._createNBR()
+        
+        # Close Data-sets
+        self._closeDatasets()
+
     def _closeDatasets(self):
         print("Closing Datasets ...")
         self.redBand = None
@@ -70,9 +82,3 @@ class nbr(burnScarAnalysis):
         (self.redBandArray - self.nirBandArray)/
         (self.redBandArray + self.nirBandArray)))
         self._outputRaster(NBRArray,self.outputRaster)
-
-preFireNBR = nbr(sys.argv[1], sys.argv[2], sys.argv[3])
-preFireNBR._getImgSpecs(sys.argv[1])
-preFireNBR._createMask()
-preFireNBR._createNBR()
-preFireNBR._closeDatasets()
