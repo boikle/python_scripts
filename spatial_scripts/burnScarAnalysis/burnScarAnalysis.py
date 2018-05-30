@@ -54,7 +54,7 @@ class nbr(burnScarAnalysis):
 
         # Create NBR
         self._createNBR()
-        
+
         # Close Data-sets
         self._closeDatasets()
 
@@ -82,3 +82,42 @@ class nbr(burnScarAnalysis):
         (self.redBandArray - self.nirBandArray)/
         (self.redBandArray + self.nirBandArray)))
         self._outputRaster(NBRArray,self.outputRaster)
+
+class difference(burnScarAnalysis):
+    def __init__(self, preNBR, postNBR, output):
+        burnScarAnalysis.__init__(self)
+        self.preNBR = gdal.Open(preNBR)
+        self.preNBRArray = self.preNBR.ReadAsArray()
+        self.postNBR = gdal.Open(postNBR)
+        self.postNBRArray = self.postNBR.ReadAsArray()
+        self.outputRaster = output
+
+        # Retrieve Image specifications
+        burnScarAnalysis._getImgSpecs(self, preNBR)
+
+        # If raster extents match create NBR Difference Raster
+        if (self._matchingExtents()):
+            self._createDifference()
+            self._closeDatasets()
+
+    def _matchingExtents(self):
+        preGT = self.preNBR.GetGeoTransform()
+        postGT = self.postNBR.GetGeoTransform()
+
+        if( preGT != postGT ):
+            print("Error: Extents of Pre and Post NBR rasters don't match")
+            return False
+        else: 
+            return True
+
+    def _closeDatasets(self):
+        print("Closing Datasets ...")
+        self.preNBR = None
+        self.postNBR = None
+
+    # Normalized Burn Ratio Difference
+    # NBRDifference = (pre-fire-nbr - post-fire-nbr)
+    def _createDifference(self):
+        print("Creating Normalized Burn Ratio Difference Raster...")
+        NBRDifferenceArray = (self.preNBRArray - self.postNBRArray)
+        self._outputRaster(NBRDifferenceArray,self.outputRaster)
