@@ -49,7 +49,7 @@ class nbr(burnScarAnalysis):
         burnScarAnalysis._getImgSpecs(self, red)
 
         # Create mask for imagery
-        self.maskValue = -9999
+        self.maskValue = numpy.NaN
         self._createMask()
 
         # Create NBR
