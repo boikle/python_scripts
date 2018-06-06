@@ -37,16 +37,26 @@ class burnScarAnalysis:
         inputRaster = None
 
 class nbr(burnScarAnalysis):
-    def __init__(self, red, nir, output):
+    def __init__(self, **kwargs):
         burnScarAnalysis.__init__(self)
-        self.redBand = gdal.Open(red)
-        self.redBandArray = self.redBand.ReadAsArray()
-        self.nirBand = gdal.Open(nir)
-        self.nirBandArray = self.nirBand.ReadAsArray()
-        self.outputRaster = output
+        if kwargs is not None:
+            if 'red' in kwargs:
+                self.redBand = gdal.Open(kwargs['red'])
+                self.redBandArray = self.redBand.ReadAsArray()
+                
+                # Retrieve Image specifications
+                burnScarAnalysis._getImgSpecs(self, kwargs['red'])
+            
+            if 'nir' in kwargs:
+                self.nirBand = gdal.Open(kwargs['nir'])
+                self.nirBandArray = self.nirBand.ReadAsArray()
 
-        # Retrieve Image specifications
-        burnScarAnalysis._getImgSpecs(self, red)
+            if 'watermask' in kwargs:
+                self.waterMask = gdal.Open(kwargs['watermask'])
+                self.waterMaskArray = self.waterMask.ReadAsArray()
+            
+            if 'output' in kwargs: 
+                self.outputRaster = kwargs['output']
 
         # Create mask for imagery
         self.maskValue = numpy.NaN
@@ -62,13 +72,15 @@ class nbr(burnScarAnalysis):
         print("Closing Datasets ...")
         self.redBand = None
         self.nirBand = None
+        self.waterMaskArray = None
 
     # Create a mask indicating invalid pixels
     # - Mask out invalid Landsat 8 surface reflectance values (< 0 | > 10000)
     # - Mask out when denominator equals 0
     def _createMask(self):
         print("Creating Mask ...")
-        self.mask = numpy.where((self.redBandArray < 0) 
+        self.mask = numpy.where((self.waterMaskArray == 1) 
+        | (self.redBandArray < 0) 
         | (self.nirBandArray < 0) 
         | (self.redBandArray > 10000) 
         | (self.nirBandArray > 10000) 
