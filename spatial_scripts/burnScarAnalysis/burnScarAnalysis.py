@@ -14,7 +14,7 @@ class burnScarAnalysis:
     def __init__(self):
         self.outDriver = gdal.GetDriverByName("GTiff")
 
-    def _outputRaster(self, inputArray, outputRaster):
+    def outputRaster(self, inputArray, outputRaster):
         print("Outputing raster result...")
         outputRaster = self.outDriver.Create(str(outputRaster), self.rows, self.cols, 1, gdal.GDT_Float32)
         
@@ -26,7 +26,7 @@ class burnScarAnalysis:
         # Close output raster
         outputRaster = None
 
-    def _getImgSpecs(self, raster):
+    def getImgSpecs(self, raster):
         print("Getting Image Specifications ...")
         inputRaster = gdal.Open(raster)
         self.geoTransform = inputRaster.GetGeoTransform()
@@ -36,48 +36,58 @@ class burnScarAnalysis:
         # Close input raster
         inputRaster = None
 
+    def extentsMatch(self, raster1, raster2):
+        if( raster1.GetGeoTransform() != raster2.GetGeoTransform() ):
+            print("Error: Raster extents don't match")
+            return False
+        else: 
+            return True
+
 class nbr(burnScarAnalysis):
     def __init__(self, **kwargs):
         burnScarAnalysis.__init__(self)
         if kwargs is not None:
-            if 'red' in kwargs:
+            try: 
                 self.redBand = gdal.Open(kwargs['red'])
                 self.redBandArray = self.redBand.ReadAsArray()
-                
-                # Retrieve Image specifications
-                burnScarAnalysis._getImgSpecs(self, kwargs['red'])
-            
-            if 'nir' in kwargs:
                 self.nirBand = gdal.Open(kwargs['nir'])
                 self.nirBandArray = self.nirBand.ReadAsArray()
+                self.output = kwargs['output']
+                # Get image specifications
+                burnScarAnalysis.getImgSpecs(self, kwargs['red'])
+            except:
+                sys.exit("red, nir, and output parameters must be specified.")
 
             if 'watermask' in kwargs:
                 self.waterMask = gdal.Open(kwargs['watermask'])
-                self.waterMaskArray = self.waterMask.ReadAsArray()
-            
-            if 'output' in kwargs: 
-                self.outputRaster = kwargs['output']
+                
+                if ((self.extentsMatch(self.waterMask, self.redBand)) 
+                    and (self.extentsMatch(self.waterMask, self.nirBand))):
+                    self.waterMaskArray = self.waterMask.ReadAsArray()
+                else:
+                    print("Warning: Water mask raster extent doesn't match red or nir raster extents")
+                    self.waterMaskArray = False
+            else:
+                self.waterMaskArray = False
 
         # Create mask for imagery
         self.maskValue = numpy.NaN
-        self._createMask()
+        self.createMask()
 
         # Create NBR
-        self._createNBR()
+        self.createNBR()
 
         # Close Data-sets
-        self._closeDatasets()
-
-    def _closeDatasets(self):
         print("Closing Datasets ...")
         self.redBand = None
         self.nirBand = None
         self.waterMaskArray = None
 
     # Create a mask indicating invalid pixels
+    # - Mask out waterbocies if water mask is provided
     # - Mask out invalid Landsat 8 surface reflectance values (< 0 | > 10000)
     # - Mask out when denominator equals 0
-    def _createMask(self):
+    def createMask(self):
         print("Creating Mask ...")
         self.mask = numpy.where((self.waterMaskArray == 1) 
         | (self.redBandArray < 0) 
@@ -88,48 +98,43 @@ class nbr(burnScarAnalysis):
 
     # Normalized Burn Ratio 
     # NBR = (Red - NIR)/(Red + NIR)
-    def _createNBR(self):
+    def createNBR(self):
         print("Creating Normalized Burn Ratio ...")
         NBRArray = numpy.choose(self.mask,(self.maskValue, 
         (self.redBandArray - self.nirBandArray)/
         (self.redBandArray + self.nirBandArray)))
-        self._outputRaster(NBRArray,self.outputRaster)
+        self.outputRaster(NBRArray,self.output)
 
 class difference(burnScarAnalysis):
-    def __init__(self, preNBR, postNBR, output):
+    def __init__(self, **kwargs):
         burnScarAnalysis.__init__(self)
-        self.preNBR = gdal.Open(preNBR)
-        self.preNBRArray = self.preNBR.ReadAsArray()
-        self.postNBR = gdal.Open(postNBR)
-        self.postNBRArray = self.postNBR.ReadAsArray()
-        self.outputRaster = output
 
-        # Retrieve Image specifications
-        burnScarAnalysis._getImgSpecs(self, preNBR)
+        if kwargs is not None:
+            try: 
+                self.preNBR = gdal.Open(kwargs['prenbr'])
+                self.preNBRArray = self.preNBR.ReadAsArray()
+                self.postNBR = gdal.Open(kwargs['postnbr'])
+                self.postNBRArray = self.postNBR.ReadAsArray()
+                self.output = kwargs['output']
+                # Get image specifications
+                burnScarAnalysis.getImgSpecs(self, kwargs['prenbr'])
+            except:
+                sys.exit("prenbr, postnbr, and output parameters must be specified.")
 
         # If raster extents match create NBR Difference Raster
-        if (self._matchingExtents()):
-            self._createDifference()
-            self._closeDatasets()
+        if (self.extentsMatch(self.preNBR,self.postNBR)):
+            self.createDifference(self.preNBRArray, self.postNBRArray)
 
-    def _matchingExtents(self):
-        preGT = self.preNBR.GetGeoTransform()
-        postGT = self.postNBR.GetGeoTransform()
+            print("Closing Datasets ...")
+            self.preNBR = None
+            self.postNBR = None
 
-        if( preGT != postGT ):
-            print("Error: Extents of Pre and Post NBR rasters don't match")
-            return False
-        else: 
-            return True
-
-    def _closeDatasets(self):
-        print("Closing Datasets ...")
-        self.preNBR = None
-        self.postNBR = None
+        else:
+            print("Error: Unable to create NBR difference raster.")
 
     # Normalized Burn Ratio Difference
     # NBRDifference = (pre-fire-nbr - post-fire-nbr)
-    def _createDifference(self):
+    def createDifference(self, raster1, raster2):
         print("Creating Normalized Burn Ratio Difference Raster...")
-        NBRDifferenceArray = (self.preNBRArray - self.postNBRArray)
-        self._outputRaster(NBRDifferenceArray,self.outputRaster)
+        NBRDifferenceArray = raster1 - raster2
+        self.outputRaster(NBRDifferenceArray,self.output)
