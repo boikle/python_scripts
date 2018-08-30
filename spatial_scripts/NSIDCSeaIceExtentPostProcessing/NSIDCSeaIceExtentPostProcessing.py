@@ -117,9 +117,6 @@ class NSIDCSeaIceExtentPostProcessing:
         # Close data source
         dataSource = None
 
-    # def escapeTableName( tableName ):
-    #     return "'" + tableName + "'"
-
     def mergeGeoJsonFiles(self):
         print("Merging geojson files ...", end="")
         catfile = "nsidc_data.geojson"
