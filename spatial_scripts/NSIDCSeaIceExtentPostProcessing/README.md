@@ -44,3 +44,8 @@ NSIDC Sea Ice Index data in the form of sea ice extent polygons, required post-p
 ```
 ### Prerequisites ###
 * GDAL, available [here](http://www.gdal.org/).
+
+### Script Usage Example ###
+``` python
+python3 NSIDCSeaIceExtentPostProcessing.py NSIDCDataDir/
+```
