@@ -3,3 +3,4 @@ spatial_scripts/burnScarAnalysis/original_data/*
 spatial_scripts/burnScarAnalysis/data/*
 spatial_scripts/burnScarAnalysis/notes/*
 data_science_scripts/canadian_energy_production/data/*
+data_science_scripts/canadian_energy_production/.ipynb_checkpoints/*
