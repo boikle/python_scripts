@@ -3,8 +3,9 @@ Bulk lidar processing script
 '''
 
 import os
-
-DATA_DIR = '~/Desktop/lidar_processing/data/'
+HOME_DIR = os.getenv("HOME")
+DATA_DIR = HOME_DIR + '/Desktop/lidar_processing/data/'
+LASTOOLS_DIR = HOME_DIR + '/LAStools/bin/'
 
 def delete_tiles():
     '''Delete old tiles'''
@@ -17,7 +18,9 @@ def create_lidar_tiles():
     for filename in os.listdir(DATA_DIR):
         if filename.endswith('.laz') or filename.endswith('.las'):
             file_path = os.path.join(DATA_DIR, filename)
-            os.system('file ' + file_path)
+            tile_path = os.path.join(DATA_DIR + 'tiles/', filename)
+            os.system('wine ' + LASTOOLS_DIR + 'lastile -i "' + file_path
+                      + '" -tile_size 500 -buffer 25 -o ' + tile_path)
 
 # Delete old tiles
 delete_tiles()
