@@ -6,7 +6,7 @@ import os
 HOME_DIR = os.getenv("HOME")
 DATA_DIR = HOME_DIR + '/Desktop/lidar_processing/data/'
 LASTOOLS_DIR = HOME_DIR + '/LAStools/bin/'
-TILE_SIZE = '250'
+TILE_SIZE = '200'
 BUFFER = '25'
 
 def del_work_dirs():
@@ -30,8 +30,11 @@ def create_lidar_tiles():
             file_path = os.path.join(DATA_DIR, filename)
             tile_path = os.path.join(DATA_DIR + 'tiles/', filename)
             os.system('wine ' + LASTOOLS_DIR + 'lastile -i "' + file_path
-                      + '" -tile_size ' + TILE_SIZE +' -buffer '
-                      + BUFFER + ' -o ' + tile_path)
+                      + '" -tile_size ' + TILE_SIZE
+                      + ' -buffer ' + BUFFER
+                      + ' -epsg 2953 '
+                      + ' -cores 4 '
+                      + ' -o ' + tile_path)
 
 def create_ground_tiles():
     '''Create Lidar ground laz fils'''
@@ -39,9 +42,9 @@ def create_ground_tiles():
     for filename in os.listdir(DATA_DIR + 'tiles/'):
         if filename.endswith('.laz') or filename.endswith('.las'):
             file_path = os.path.join(DATA_DIR + 'tiles/', filename)
-            ground_path = os.path.join(DATA_DIR + 'ground/', filename)
+            ground_path = os.path.join(DATA_DIR + 'ground/')
             os.system('wine ' + LASTOOLS_DIR + 'lasground -i "' + file_path
-                      + '" -o ' + ground_path)
+                      + '" -odir ' + ground_path + ' -olaz')
 
 def create_dems():
     '''Create Digital Elevation Models for each ground classification'''
