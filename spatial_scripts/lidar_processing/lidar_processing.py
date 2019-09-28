@@ -22,6 +22,9 @@ def del_work_dirs():
     print('Deleting old height data ...')
     os.system('rm -r ' + DATA_DIR + 'height')
     os.system('mkdir ' + DATA_DIR + 'height')
+    print('Deleting old classification data ...')
+    os.system('rm -r ' + DATA_DIR + 'classified')
+    os.system('mkdir ' + DATA_DIR + 'classified')
     print('Deleting old dem rasters ...')
     os.system('rm -r ' + DATA_DIR + 'dems')
     os.system('mkdir ' + DATA_DIR + 'dems')
@@ -43,34 +46,39 @@ def create_lidar_tiles():
 
 def create_ground_tiles():
     '''Create Lidar ground laz fils'''
-    print('\nGenerating ground classifications of lidar data ...')
-    for filename in os.listdir(DATA_DIR + 'tiles/'):
-        if filename.endswith('.laz') or filename.endswith('.las'):
-            file_path = os.path.join(DATA_DIR + 'tiles/', filename)
-            ground_path = os.path.join(DATA_DIR + 'ground/')
-            os.system('wine ' + LASTOOLS_DIR + 'lasground -i "' + file_path
-                      + '" -odir ' + ground_path + ' -olaz')
+    print('\nGenerating ground tiles ...')
+    file_path = DATA_DIR + 'tiles/*.laz'
+    ground_path = DATA_DIR + 'ground/'
+    os.system('wine ' + LASTOOLS_DIR + 'lasground -i "' + file_path
+              + '" -odir ' + ground_path + ' -olaz'
+              + ' -cores 4')
 
 def create_height_tiles():
     '''Create Lidar height laz fils'''
-    print('\nGenerating height classifications of lidar data ...')
-    for filename in os.listdir(DATA_DIR + 'tiles/'):
-        if filename.endswith('.laz') or filename.endswith('.las'):
-            file_path = os.path.join(DATA_DIR + 'ground/', filename)
-            height_path = os.path.join(DATA_DIR + 'height/')
-            os.system('wine ' + LASTOOLS_DIR + 'lasheight -i "' + file_path
-                      + '" -drop_below -2 -drop_above 30 '
-                      + ' -odir ' + height_path + ' -olaz')
+    print('\nGenerating height tiles ...')
+    file_path = DATA_DIR + 'ground/*.laz'
+    height_path = DATA_DIR + 'height/'
+    os.system('wine ' + LASTOOLS_DIR + 'lasheight -i "' + file_path
+              + '" -drop_below -2 -drop_above 30 -cores 4'
+              + ' -odir ' + height_path + ' -olaz')
+
+def classify_height_tiles():
+    '''Create Lidar height laz fils'''
+    print('\nClassifying height tiles ...')
+    file_path = DATA_DIR + 'height/*.laz'
+    classified_path = DATA_DIR + 'classified/'
+    os.system('wine ' + LASTOOLS_DIR + 'lasclassify -i "' + file_path
+              + '" -step 3 -cores 4'
+              + ' -odir ' + classified_path + ' -olaz')
 
 def create_dems():
     '''Create Digital Elevation Models for each ground classification'''
     print('\nGenerating dem rasters ...')
-    for filename in os.listdir(DATA_DIR + 'ground/'):
-        if filename.endswith('.laz') or filename.endswith('.las'):
-            file_path = os.path.join(DATA_DIR + 'ground/', filename)
-            dem_path = os.path.join(DATA_DIR + 'dems/', filename[:-3] + 'tif')
-            os.system('wine ' + LASTOOLS_DIR + 'las2dem -i "' + file_path
-                      + '" -o ' + dem_path + ' -keep_classification 2 -elevation')
+    file_path = DATA_DIR + 'ground/*.laz'
+    dem_path = DATA_DIR + 'dems/'
+    os.system('wine ' + LASTOOLS_DIR + 'las2dem -i "' + file_path
+              + '" -odir ' + dem_path + ' -keep_classification 2 -elevation'
+              + ' -otif -cores 4')
 
 
 # Delete old work directories
@@ -84,6 +92,9 @@ create_ground_tiles()
 
 # Create lidar height tiles
 create_height_tiles()
+
+# Classify height tiles
+classify_height_tiles()
 
 # Create dem tiles
 create_dems()
