@@ -25,9 +25,12 @@ def del_work_dirs():
     print('Deleting old classification data ...')
     os.system('rm -r ' + DATA_DIR + 'classified')
     os.system('mkdir ' + DATA_DIR + 'classified')
-    print('Deleting old dem rasters ...')
-    os.system('rm -r ' + DATA_DIR + 'dems')
-    os.system('mkdir ' + DATA_DIR + 'dems')
+    print('Deleting old dtm rasters ...')
+    os.system('rm -r ' + DATA_DIR + 'dtms')
+    os.system('mkdir ' + DATA_DIR + 'dtms')
+    print('Deleting old dsm rasters ...')
+    os.system('rm -r ' + DATA_DIR + 'dsms')
+    os.system('mkdir ' + DATA_DIR + 'dsms')
 
 
 def create_lidar_tiles():
@@ -71,15 +74,23 @@ def classify_height_tiles():
               + '" -step 3 -cores 4'
               + ' -odir ' + classified_path + ' -olaz')
 
-def create_dems():
-    '''Create Digital Elevation Models for each ground classification'''
-    print('\nGenerating dem rasters ...')
-    file_path = DATA_DIR + 'ground/*.laz'
-    dem_path = DATA_DIR + 'dems/'
+def create_dtms():
+    '''Create Digital Terrian Model tiles'''
+    print('\nGenerating dtm rasters ...')
+    file_path = DATA_DIR + 'classified/*.laz'
+    dtm_path = DATA_DIR + 'dtms/'
     os.system('wine ' + LASTOOLS_DIR + 'las2dem -i "' + file_path
-              + '" -odir ' + dem_path + ' -keep_classification 2 -elevation'
-              + ' -otif -cores 4')
+              + '" -odir ' + dtm_path + ' -keep_classification 2'
+              + ' -otif -use_tile_bb -thin_with_grid 0.5 -extra_pass -cores 4')
 
+def create_dsms():
+    '''Create Digital Surface Model tiles'''
+    print('\nGenerating dsm rasters ...')
+    file_path = DATA_DIR + 'classified/*.laz'
+    dsm_path = DATA_DIR + 'dsms/'
+    os.system('wine ' + LASTOOLS_DIR + 'las2dem -i "' + file_path
+              + '" -odir ' + dsm_path + ' -first_only'
+              + ' -otif -use_tile_bb -thin_with_grid 0.5 -extra_pass -cores 4')
 
 # Delete old work directories
 del_work_dirs()
@@ -96,8 +107,11 @@ create_height_tiles()
 # Classify height tiles
 classify_height_tiles()
 
-# Create dem tiles
-create_dems()
+# Create dtm tiles
+create_dtms()
+
+# Create dsm tiles
+create_dsms()
 
 # Calculate Elapsed Time:
 ELAPSED_TIME = time.time() - START_TIME
