@@ -1,2 +1,6 @@
 # Virtual Environment
 env/
+
+# Scraped data
+quotes-1.html
+quotes-2.html
