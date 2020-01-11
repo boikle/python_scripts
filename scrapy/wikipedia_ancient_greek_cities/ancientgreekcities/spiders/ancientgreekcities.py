@@ -9,24 +9,14 @@ class QuotesSpider(scrapy.Spider):
         'https://en.wikipedia.org/wiki/List_of_ancient_Greek_cities'
     ]
 
-    def parse_coords(self, response):
-        # Extract the latitude and Longitude
-        for quote in response.css('table span.geo'):
-            yield {
-                'latitude': quote.css('span.latitude::text').get(),
-                'longitude': quote.css('span.longitude::text').get()
-            }
-
-
     def parse_city(self, response):
-        # Extract the city name
-        for table in response.css('table.infobox.geography.vcard'):
+        # Extract the city name, lat, long
+        for quote in response.css('table.infobox.geography.vcard'):
             yield {
-                'name': table.css('div.fn.org::text').get()
+                'name': quote.css('div.fn.org::text').get(),
+                'latitude': quote.css('span.latitude::text').get(),
+                'longitude': quote.css('span.longitude::text').get(),
             }
-
-        for href in response.css('span#coordinates span a::attr(href)'):
-            yield response.follow(href, self.parse_coords)
 
     def parse(self, response):
         # follow links to ancient city pages
