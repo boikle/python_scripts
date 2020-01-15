@@ -1,0 +1,8 @@
+# Virtual Environment
+env/
+
+# Swap File
+*.swp
+
+# Python Cache
+__pycache__
