@@ -3,3 +3,6 @@ env/
 
 # Swap File
 *.swp
+
+# PyCache Directory
+__pycache__/
