@@ -13,11 +13,7 @@ class CaesarCipher:
             else:
                 sys.exit("Must provide a 'message'")
 
-        print('---------------------------------')
-        print('abcdefghijklmnopqrstuvwxyz')
-        print(self.encrypt('abcdefghijklmnopqrstuvwxyz'))
-        print('---------------------------------')
-        print('Encrypted Message: {}'.format(self.encrypt(self.message)))
+        print('{}'.format(self.encrypt(self.message)))
 
     def is_shift_valid(self, shift_amt):
         """Returns true if the shift value is valid"""
@@ -55,11 +51,3 @@ class CaesarCipher:
 
         return encrypted_msg
 
-
-
-print('Caesar Cipher')
-print('------------------------------')
-SHIFT_AMT = input('Shift Amount (-25 to 25): ')
-MSG = input('Message: ')
-
-CaesarCipher(shift=SHIFT_AMT, message=MSG)
