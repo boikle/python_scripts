@@ -5,7 +5,7 @@ print('------------------------------')
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 SHIFT_AMT = input('Shift Amount (-25 to 25): ')
 MSG = input('Message: ')
- 
+
 # Show Alphabet and Corresponding Cipher Text
 print('------------------------------')
 print('{}'.format(ALPHABET))

@@ -21,9 +21,9 @@ class CaesarCipher:
             if (int(shift_amt)
                 and int(shift_amt) <= 25
                 and int(shift_amt) >= -25):
-                return True;
+                return True
         except ValueError:
-            return False;
+            return False
 
     def get_ascii_value(self, char):
         """Get the shifted ascii character"""
@@ -50,4 +50,3 @@ class CaesarCipher:
             encrypted_msg += chr(shifted_char)
 
         return encrypted_msg
-
