@@ -14,7 +14,8 @@ def extract_features_by_extent(input_features, extent_features):
     :param extent_features: fiona collection of extent geospatial features
     """
     if __name__ == '__main__':
-        bbox = shapely.geometry.box(extent_features.bounds[0], extent_features.bounds[1], extent_features.bounds[2], extent_features.bounds[3], ccw=True)
+        bounds = extent_features.bounds
+        bbox = shapely.geometry.box(bounds[0], bounds[1], bounds[2], bounds[3], ccw=True)
         output_file = extent_features.name + '_' + input_features.name + '.geojson'
 
         # Iterate through input features and output intersecting features
@@ -34,7 +35,6 @@ def extract_features_by_extent(input_features, extent_features):
 def main():
     """
     Entry point of feature extraction script
-    :return:
     """
     extents = 'data/extents/'
     input_data = 'data/input/MS.geojson'
@@ -44,10 +44,10 @@ def main():
 
         # Loop through sample files
         for file in os.listdir(extents):
-            print("Opening extent file " + file)
+            print("\nOpening extent file " + file)
             extent = fiona.open(extents + file, 'r')
 
-            print("\nExtracting input features in sample bounding box")
+            print("Extracting input features in extent's bounding box")
             extract_features_by_extent(input_features, extent)
 
 
