@@ -26,9 +26,17 @@ def main():
     Main entry to scrapping script
     """
     data_source_url = "https://en.wikipedia.org/wiki/Category:Roman_towns_and_cities_by_country"
-    source_content = getSourceContent(data_source_url)
+    src_content = getSourceContent(data_source_url)
 
+    soup = BeautifulSoup(src_content, 'lxml')
 
+    # Get list of Roman Town and City Links
+    links = soup.select('.mw-category .CategoryTreeItem a')
+
+    print(links)
+    for link in links:
+
+        print('https://en.wikipedia.org' + link.attrs['href'])
 
 if __name__ == '__main__':
     main()
