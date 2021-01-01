@@ -1,33 +1,72 @@
 import requests
 from bs4 import BeautifulSoup
+import utils
 
 
-def getSourceContent(source_url):
+def get_city_coords(city_url):
     """
-    Get the HTML content for the provided source URL
-
-    Attributes:
-    ---------------
-    source_url: string
-        The URL for the website being requested
-
-    Returns:
-    ---------------
-    src: bytes literal
-        A string containing the html content for the provided source
+    Get city coordinates string from wikipedia page
     """
-    requested_data = requests.get(source_url)
-    src = requested_data.content
+    coords = None
+    city_source = utils.get_source_content(city_url)
+    if city_source:
+        soup = BeautifulSoup(city_source, 'lxml')
+        geodec = soup.find('span', class_='geo-dec')
 
-    return src
+        if geodec and geodec.text:
+            coords = geodec.text
+
+    return coords
+
+
+def parse_lat(coords):
+    """
+    Parse lat/long string to retrieve latitude number in decimal degree format
+
+    Example: 40.2°N 35.5°E  returns 40.2
+    """
+    lat = None
+
+    if coords.find("°N") != -1:
+        lat_index = coords.index("°N")
+        lat = float(coords[:lat_index])
+    elif coords.find("°S") != -1:
+        lat_index = coords.index("°S")
+        lat = float(coords[:lat_index]) * -1
+
+    return lat
+
+
+def parse_long(coords):
+    """
+    Parse lat/long string to retrieve longitude number in decimal degree format
+    
+    Example: 40.2°N 35.5°E  returns 35.5
+    """
+    long = None
+    coords = coords.split()
+
+    if len(coords) == 2:
+        coords = coords[1]
+        if coords.find("°E") != -1:
+            long_index = coords.index("°E")
+            long = float(coords[:long_index])
+        elif coords.find("°W") != -1:
+            long_index = coords.index("°W")
+            long = float(coords[:long_index]) * -1
+
+    return long
+
 
 def main():
     """
     Main entry to scrapping script
     """
 
+    rows = []
+    fields = ['city_name', 'lat', 'long']
     data_source_url = "https://en.wikipedia.org/wiki/List_of_ancient_Greek_cities"
-    src_content = getSourceContent(data_source_url)
+    src_content = utils.get_source_content(data_source_url)
 
     soup = BeautifulSoup(src_content, 'lxml')
 
@@ -41,19 +80,12 @@ def main():
         city_name = link.text
         city_coords = get_city_coords(city_url)
         if city_coords:
-            print("{}, {}".format(city_name, city_coords))
+            print("{}, {}, {}".format(city_name, parse_lat(city_coords), parse_long(city_coords)))
+            rows.append([city_name, parse_lat(city_coords), parse_long(city_coords)])
 
+    # Export scraped data
+    utils.export_data('greek_cities.csv', fields, rows)
 
-def get_city_coords(city_url):
-   coords = None
-   city_source = getSourceContent(city_url)
-   soup = BeautifulSoup(city_source, 'lxml')
-   geodec = soup.find('span', class_='geo-dec')
-
-   if geodec and geodec.text:
-        coords = geodec.text
-
-   return coords
 
 if __name__ == '__main__':
     main()
