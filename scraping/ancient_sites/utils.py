@@ -1,5 +1,7 @@
 import csv
 import os
+import requests
+from bs4 import BeautifulSoup
 
 
 def get_source_content(source_url):
