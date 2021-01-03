@@ -8,7 +8,7 @@ def main():
     """
 
     rows = []
-    fields = ['city_name', 'lat', 'long']
+    fields = ['city_name', 'lat', 'long', 'foundation', 'source_url']
     data_source_url = "https://en.wikipedia.org/wiki/List_of_ancient_Greek_cities"
     src_content = utils.get_source_content(data_source_url)
 
@@ -22,10 +22,11 @@ def main():
         host_url = 'https://en.wikipedia.org'
         city_url = host_url + link.attrs['href']
         city_name = link.text
+        founding = utils.get_founding_date(city_url)
         city_coords = utils.get_city_coords(city_url)
         if city_coords:
-            print("{}, {}, {}".format(city_name, utils.parse_lat(city_coords), utils.parse_long(city_coords)))
-            rows.append([city_name, utils.parse_lat(city_coords), utils.parse_long(city_coords)])
+            print("{}, {}, {}, {}".format(city_name, utils.parse_lat(city_coords), utils.parse_long(city_coords), founding))
+            rows.append([city_name, utils.parse_lat(city_coords), utils.parse_long(city_coords), founding, city_url])
 
     # Export scraped data
     utils.export_data('greek_cities.csv', fields, rows)
