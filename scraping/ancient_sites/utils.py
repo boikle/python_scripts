@@ -28,6 +28,40 @@ def get_source_content(source_url):
     return src
 
 
+def get_abandonded_date(city_url):
+    """
+    Get the date when city was abandoned
+
+    Attributes:
+    ---------------
+    city_url: string
+        The URL for the website being requested
+
+    Returns:
+    ---------------
+    abandoned_date: string
+        A string containing the date when the city was abandoned
+    """
+    abandoned_date = None
+    city_source = get_source_content(city_url)
+    if city_source:
+        source = BeautifulSoup(city_source, 'lxml')
+        vertical_card = source.find('table', class_='vcard')
+
+        if vertical_card:
+            # Find Rows in Table
+            rows = vertical_card.find_all('tr')
+            for row in rows:
+                row_header = row.find('th')
+
+                if row_header:
+                    if row_header.text and row_header.text == "Abandoned":
+                        row_value = row.find('td')
+                        abandoned_date = row_value.text
+
+        return abandoned_date
+
+
 def get_founding_date(city_url):
     """
     Get the founding date for city
