@@ -3,6 +3,7 @@ A geospatial script to remove specified fields to drop from spatial data.
 """
 import fiona
 import sys
+from tqdm import tqdm
 
 
 def remove_fields_from_features(input_features, fields_to_drop):
@@ -29,7 +30,7 @@ def remove_fields_from_features(input_features, fields_to_drop):
             output.schema['properties'] = properties
 
         # Update all geometries by removing dropped fields
-        for elem in input_features:
+        for elem in tqdm(input_features):
             # Remove element properties
             updated_elem_props = elem['properties']
 
