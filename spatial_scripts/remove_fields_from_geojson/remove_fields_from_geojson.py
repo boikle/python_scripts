@@ -15,7 +15,7 @@ def remove_fields_from_features(input_features, fields_to_drop):
     :param input_features {string}: File location of the input data
     :param fields_to_drop {string}: List of fields to be dropped from data. e.g. "a,b,c"
     """
-    output_file = input_features.name + 'removed_fields.geojson'
+    output_file = input_features.name + '_removed_fields.geojson'
 
     with fiona.open(output_file, 'w', driver='GeoJSON', crs=input_features.crs, schema=input_features.schema) as output:
 
