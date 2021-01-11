@@ -5,6 +5,7 @@ import sys
 import fiona
 import shapely.geometry
 import shapely.wkt
+from tqdm import tqdm
 
 def reduce_coordinate_precision(input_features, coord_precision):
     """
@@ -14,7 +15,7 @@ def reduce_coordinate_precision(input_features, coord_precision):
 
     output_file = input_features.name + 'reduce_coord_precision.geojson'
     with fiona.open(output_file, 'w', driver='GeoJSON', crs=input_features.crs, schema=input_features.schema) as output:
-        for elem in input_features:
+        for elem in tqdm(input_features):
             elem_geom = shapely.geometry.shape(elem['geometry'])
 
             # Reduce precision of coordinate geometry
