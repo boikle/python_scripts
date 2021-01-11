@@ -2,8 +2,9 @@
 
 venv/
 test/
+.idea/
 
 # Files:
 
 *.swp
-*.idea
+*.geojson
