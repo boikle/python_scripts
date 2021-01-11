@@ -30,7 +30,7 @@ def remove_fields_from_features(input_features, fields_to_drop):
             output.schema['properties'] = properties
 
         # Update all geometries by removing dropped fields
-        for elem in tqdm(input_features):
+        for elem in tqdm(input_features, position=0, leave=True):
             # Remove element properties
             updated_elem_props = elem['properties']
 
