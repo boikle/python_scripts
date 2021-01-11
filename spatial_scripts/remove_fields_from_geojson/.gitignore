@@ -1,0 +1,9 @@
+# Directories:
+
+venv/
+test/
+.idea/
+
+# Files:
+
+*.swp
