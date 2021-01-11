@@ -13,7 +13,7 @@ def reduce_coordinate_precision(input_features, coord_precision):
     :param coord_precision {number} - number of decimal places to keep in coordinates
     """
 
-    output_file = input_features.name + 'reduce_coord_precision.geojson'
+    output_file = input_features.name + '_reduce_coord_precision.geojson'
     with fiona.open(output_file, 'w', driver='GeoJSON', crs=input_features.crs, schema=input_features.schema) as output:
         for elem in tqdm(input_features):
             elem_geom = shapely.geometry.shape(elem['geometry'])
