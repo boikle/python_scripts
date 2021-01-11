@@ -25,7 +25,7 @@ Input:
 }
 ```
 
-Output with a coorinate precision of 5:
+Output with a reduced coorinate precision of 5:
 ```
 {
 "type": "FeatureCollection",
