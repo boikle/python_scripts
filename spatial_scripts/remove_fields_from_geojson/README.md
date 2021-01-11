@@ -13,12 +13,25 @@ Example: `python remove_fields_from_geojson.py cities.geojson "foobar,temp,test"
 
 # Example Of Transformation:
 
-input
+Input:
 ```
+{
+"type": "FeatureCollection",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "UID": "1", "foo": "bar" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ -100.123456789012345, 50.123456789012345 ], [ -110.123456789012345, 60.123456789012345 ], [ -100.123456789012345, 50.123456789012345 ] ] ] } }
+]
+}
 ```
 
-output
+Output with the field 'foo' being removed:
 ```
-
+{
+"type": "FeatureCollection",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "UID": "1" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ -100.123456789012345, 50.123456789012345 ], [ -110.123456789012345, 60.123456789012345 ], [ -100.123456789012345, 50.123456789012345 ] ] ] } }
+]
+}
 ```
 
