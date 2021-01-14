@@ -18,3 +18,7 @@ and dividing that collection of data based on a specified splitting feature
 * pygeos
 * tqdm
 
+## How To Use:
+
+* Syntax: `python merge_and_split.py <input-files-dir> <file-for-spliting> <field-for-splitting>`
+* Example: `python merge_and_split.py data\myinputfiles data\splitfile.shp mysplitfield`
