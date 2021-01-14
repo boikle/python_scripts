@@ -1,0 +1,8 @@
+# Directories to ignore:
+venv/
+.idea/
+test/
+output/
+
+# Files to ignore:
+*.swp
