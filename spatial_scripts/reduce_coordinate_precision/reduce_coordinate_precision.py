@@ -7,8 +7,11 @@ import shapely.geometry
 import shapely.wkt
 from tqdm import tqdm
 
+
 def reduce_coordinate_precision(input_features, coord_precision):
     """
+    Reduces the coordinate precision of the input features to the specified amount.
+
     :param input_features {string} - File location of the input data.
     :param coord_precision {number} - number of decimal places to keep in coordinates
     """
@@ -33,6 +36,11 @@ def reduce_coordinate_precision(input_features, coord_precision):
 def main(input_file, coord_precision):
     """
     Entry point of coordinate precision reduction script
+
+    Attributes:
+    ---------------
+    :param input_file {string} - Path to input file
+    :param coord_precision {number} - Number of decimal places to reduce coordinate precision to
     """
 
     print("Opening input data...")
