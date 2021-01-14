@@ -1,0 +1,5 @@
+# Ignored Directories:
+venv/
+
+# Ignored Files:
+*.swp
