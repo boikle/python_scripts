@@ -8,4 +8,5 @@ A processing script for removing duplicate features in geographic data.
 
 # How To Use:
 Syntax: `python remove_duplicate_geometries.py <input-file>`
+
 Example: `python remove_duplicate_geometries.py cities.geojson`
