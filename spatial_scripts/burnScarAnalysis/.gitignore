@@ -1,0 +1,5 @@
+# Directories to Ignore:
+./__pycache__/
+./original_data/
+./data/
+./notes/
